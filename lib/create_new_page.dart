@@ -1,0 +1,560 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// Data models for sections/steps
+class ResumeSection {
+  final String name;
+  final List<ResumeStep> steps;
+  ResumeSection({required this.name, required this.steps});
+}
+
+class ResumeStep {
+  final String id;
+  final String label;
+  final String type; // text | textarea | email | tel
+  final String placeholder;
+  final bool required;
+
+  ResumeStep({
+    required this.id,
+    required this.label,
+    this.type = 'text',
+    this.placeholder = '',
+    this.required = false,
+  });
+}
+
+class ResumeBuilderPage extends StatefulWidget {
+  const ResumeBuilderPage({super.key});
+
+  @override
+  State<ResumeBuilderPage> createState() => _ResumeBuilderPageState();
+}
+
+class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
+  final List<ResumeSection> sections = [
+    ResumeSection(
+      name: 'Personal Info',
+      steps: [
+        ResumeStep(
+          id: 'firstName',
+          label: 'What\'s your first name?',
+          placeholder: 'John',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'lastName',
+          label: 'And your last name?',
+          placeholder: 'Doe',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'email',
+          label: 'Your email address?',
+          type: 'email',
+          placeholder: 'john.doe@example.com',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'phone',
+          label: 'Phone number?',
+          type: 'tel',
+          placeholder: '+1 (555) 123-4567',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'city',
+          label: 'Which city are you in?',
+          placeholder: 'New York',
+          required: false,
+        ),
+      ],
+    ),
+    ResumeSection(
+      name: 'Education',
+      steps: [
+        ResumeStep(
+          id: 'degree',
+          label: 'What\'s your degree?',
+          placeholder: 'Bachelor of Science',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'school',
+          label: 'Which school?',
+          placeholder: 'University of California',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'graduationYear',
+          label: 'Graduation year?',
+          placeholder: '2020',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'major',
+          label: 'Your major?',
+          placeholder: 'Computer Science',
+          required: false,
+        ),
+      ],
+    ),
+    ResumeSection(
+      name: 'Experience',
+      steps: [
+        ResumeStep(
+          id: 'jobTitle',
+          label: 'Most recent job title?',
+          placeholder: 'Software Engineer',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'company',
+          label: 'Company name?',
+          placeholder: 'Tech Corp',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'duration',
+          label: 'How long? (e.g., 2 years)',
+          placeholder: '2 years',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'responsibilities',
+          label: 'Key responsibilities?',
+          type: 'textarea',
+          placeholder: 'Led development...',
+          required: false,
+        ),
+      ],
+    ),
+    ResumeSection(
+      name: 'Skills',
+      steps: [
+        ResumeStep(
+          id: 'technicalSkills',
+          label: 'Technical skills?',
+          placeholder: 'Python, JavaScript, React',
+          required: true,
+        ),
+        ResumeStep(
+          id: 'softSkills',
+          label: 'Soft skills?',
+          placeholder: 'Communication, Leadership',
+          required: false,
+        ),
+        ResumeStep(
+          id: 'languages',
+          label: 'Languages you speak?',
+          placeholder: 'English, Spanish',
+          required: false,
+        ),
+      ],
+    ),
+  ];
+
+  int currentSection = 0;
+  int currentStep = 0;
+  final Map<String, String> formData = {};
+
+  ResumeSection get sectionData => sections[currentSection];
+  ResumeStep get stepData => sectionData.steps[currentStep];
+
+  void nextStep() {
+    if (stepData.required &&
+        (formData[stepData.id] == null ||
+            formData[stepData.id]!.trim().isEmpty)) {
+      return;
+    }
+    setState(() {
+      if (currentStep < sectionData.steps.length - 1) {
+        currentStep++;
+      } else if (currentSection < sections.length - 1) {
+        currentSection++;
+        currentStep = 0;
+      } else {
+        // Completed
+        showCompletionDialog();
+      }
+    });
+  }
+
+  void prevStep() {
+    setState(() {
+      if (currentStep > 0) {
+        currentStep--;
+      } else if (currentSection > 0) {
+        currentSection--;
+        currentStep = sections[currentSection].steps.length - 1;
+      }
+    });
+  }
+
+  void showCompletionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Color(0xFF10B981)),
+            const SizedBox(width: 12),
+            Text(
+              'Resume Complete!',
+              style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Your resume has been successfully created with the following information:',
+                style: GoogleFonts.inter(color: Colors.black87),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Text(
+                    formData.entries
+                        .map((e) => '${e.key}: ${e.value}')
+                        .join('\n\n'),
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('Done'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double get overallProgress {
+    int totalSteps = 0;
+    for (var section in sections) {
+      totalSteps += section.steps.length;
+    }
+    int completedSteps =
+        (currentSection * sections[0].steps.length) + currentStep;
+    return completedSteps / totalSteps;
+  }
+
+  double get sectionProgress => ((currentStep + 1) / sectionData.steps.length);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Resume Builder', style: GoogleFonts.playfairDisplay()),
+        backgroundColor: const Color(0xFF6366F1),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Overall progress
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Overall Progress',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      Text(
+                        '${(overallProgress * 100).toStringAsFixed(0)}%',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF6366F1),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: overallProgress,
+                      minHeight: 6,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        Color(0xFF6366F1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Section progress card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6366F1).withOpacity(0.1),
+                      const Color(0xFF8B5CF6).withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withOpacity(0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      sectionData.name,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: sectionProgress,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey[300],
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Question ${currentStep + 1} of ${sectionData.steps.length}',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Question card
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[300]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      stepData.label,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    if (stepData.type == 'textarea')
+                      TextFormField(
+                        minLines: 4,
+                        maxLines: 6,
+                        initialValue: formData[stepData.id] ?? '',
+                        onChanged: (v) => formData[stepData.id] = v,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF6366F1),
+                              width: 2,
+                            ),
+                          ),
+                          hintText: stepData.placeholder,
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                      )
+                    else
+                      TextFormField(
+                        initialValue: formData[stepData.id] ?? '',
+                        onChanged: (v) => formData[stepData.id] = v,
+                        keyboardType: stepData.type == 'email'
+                            ? TextInputType.emailAddress
+                            : (stepData.type == 'tel'
+                                  ? TextInputType.phone
+                                  : TextInputType.text),
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: Colors.grey),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey[300]!),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF6366F1),
+                              width: 2,
+                            ),
+                          ),
+                          hintText: stepData.placeholder,
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton.icon(
+                            onPressed: prevStep,
+                            icon: const Icon(Icons.arrow_back_ios, size: 16),
+                            label: const Text(
+                              'Back',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.black54,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if (stepData.required &&
+                                  (formData[stepData.id] == null ||
+                                      formData[stepData.id]!.trim().isEmpty)) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'Please fill this required field',
+                                    ),
+                                    backgroundColor: Colors.red[600],
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              nextStep();
+                            },
+                            icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                            label: Text(
+                              (currentSection == sections.length - 1 &&
+                                      currentStep ==
+                                          sectionData.steps.length - 1)
+                                  ? 'Complete'
+                                  : 'Continue',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Section overview
+              Text(
+                'Sections',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(sections.length, (i) {
+                  final s = sections[i];
+                  final completed = i < currentSection;
+                  final isActive = i == currentSection;
+
+                  return FilterChip(
+                    label: Text(s.name),
+                    selected: isActive,
+                    onSelected: (v) {
+                      setState(() {
+                        currentSection = i;
+                        currentStep = 0;
+                      });
+                    },
+                    backgroundColor: completed
+                        ? const Color(0xFF10B981).withOpacity(0.2)
+                        : Colors.grey[200],
+                    selectedColor: const Color(0xFF6366F1).withOpacity(0.2),
+                    avatar: completed
+                        ? const Icon(
+                            Icons.check_circle,
+                            size: 18,
+                            color: Color(0xFF10B981),
+                          )
+                        : null,
+                    labelStyle: GoogleFonts.inter(
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

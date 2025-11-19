@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'create_new_page.dart';
+import 'upload_resume_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,10 +14,21 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Resumate',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6366F1)),
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF6366F1),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
       home: const HomeScreen(),
     );
@@ -28,90 +41,154 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Resumate',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 12),
-            Text(
-              'Let\'s Get Started',
-              style: GoogleFonts.playfairDisplay(
-                fontSize: 32,
-                fontWeight: FontWeight.w700,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            backgroundColor: const Color(0xFF6366F1),
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text(
+                'Resumate',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 50),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 64,
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Build Your Perfect Resume',
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Choose how you\'d like to begin',
-              style: GoogleFonts.inter(fontSize: 16),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: Row(
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: ChoiceCard(
-                      title: 'Create New',
-                      subtitle: 'Start fresh with guided steps',
-                      color: Colors.deepPurple.shade100,
-                      onTap: () => Navigator.push(
+                  Text(
+                    'Let\'s Get Started',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Choose how you\'d like to begin your journey',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    height: 120,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ChoiceCard(
+                            title: 'Create New',
+                            subtitle: 'Start fresh with guided steps',
+                            icon: Icons.add_circle_outline,
+                            color: const Color(0xFFEEF2FF),
+                            accentColor: const Color(0xFF6366F1),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ResumeBuilderPage(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ChoiceCard(
+                            title: 'Upload',
+                            subtitle: 'Import your resume',
+                            icon: Icons.cloud_upload_outlined,
+                            color: const Color(0xFFFDF2F8),
+                            accentColor: const Color(0xFFEC4899),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const UploadResumePage(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) => const ResumeBuilderPage(),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ChoiceCard(
-                      title: 'Upload Existing',
-                      subtitle: 'Import and enhance your resume',
-                      color: Colors.pink.shade100,
-                      onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Upload not implemented yet'),
-                        ),
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text(
+                        'Start Building',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
+                  const Spacer(),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ResumeBuilderPage()),
-              ),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: const Text('Proceed', style: TextStyle(fontSize: 18)),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class ChoiceCard extends StatelessWidget {
+class ChoiceCard extends StatefulWidget {
   final String title;
   final String subtitle;
   final Color color;
+  final Color accentColor;
+  final IconData icon;
   final VoidCallback onTap;
 
   const ChoiceCard({
@@ -119,424 +196,119 @@ class ChoiceCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.color,
+    required this.accentColor,
+    required this.icon,
     required this.onTap,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 12),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 6),
-            Text(
-              title,
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.black87),
-            ),
-            const Spacer(),
-            const Align(
-              alignment: Alignment.bottomRight,
-              child: Icon(Icons.arrow_forward, color: Colors.black54),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  State<ChoiceCard> createState() => _ChoiceCardState();
 }
 
-// Data models for sections/steps
-class ResumeSection {
-  final String name;
-  final List<ResumeStep> steps;
-  ResumeSection({required this.name, required this.steps});
-}
-
-class ResumeStep {
-  final String id;
-  final String label;
-  final String type; // text | textarea | email | tel
-  final String placeholder;
-  final bool required;
-
-  ResumeStep({
-    required this.id,
-    required this.label,
-    this.type = 'text',
-    this.placeholder = '',
-    this.required = false,
-  });
-}
-
-class ResumeBuilderPage extends StatefulWidget {
-  const ResumeBuilderPage({super.key});
+class _ChoiceCardState extends State<ChoiceCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
 
   @override
-  State<ResumeBuilderPage> createState() => _ResumeBuilderPageState();
-}
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
 
-class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
-  final List<ResumeSection> sections = [
-    ResumeSection(
-      name: 'Personal Info',
-      steps: [
-        ResumeStep(
-          id: 'firstName',
-          label: 'What\'s your first name?',
-          placeholder: 'John',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'lastName',
-          label: 'And your last name?',
-          placeholder: 'Doe',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'email',
-          label: 'Your email address?',
-          type: 'email',
-          placeholder: 'john.doe@example.com',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'phone',
-          label: 'Phone number?',
-          type: 'tel',
-          placeholder: '+1 (555) 123-4567',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'city',
-          label: 'Which city are you in?',
-          placeholder: 'New York',
-          required: false,
-        ),
-      ],
-    ),
-    ResumeSection(
-      name: 'Education',
-      steps: [
-        ResumeStep(
-          id: 'degree',
-          label: 'What\'s your degree?',
-          placeholder: 'Bachelor of Science',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'school',
-          label: 'Which school?',
-          placeholder: 'University of California',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'graduationYear',
-          label: 'Graduation year?',
-          placeholder: '2020',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'major',
-          label: 'Your major?',
-          placeholder: 'Computer Science',
-          required: false,
-        ),
-      ],
-    ),
-    ResumeSection(
-      name: 'Experience',
-      steps: [
-        ResumeStep(
-          id: 'jobTitle',
-          label: 'Most recent job title?',
-          placeholder: 'Software Engineer',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'company',
-          label: 'Company name?',
-          placeholder: 'Tech Corp',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'duration',
-          label: 'How long? (e.g., 2 years)',
-          placeholder: '2 years',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'responsibilities',
-          label: 'Key responsibilities?',
-          type: 'textarea',
-          placeholder: 'Led development...',
-          required: false,
-        ),
-      ],
-    ),
-    ResumeSection(
-      name: 'Skills',
-      steps: [
-        ResumeStep(
-          id: 'technicalSkills',
-          label: 'Technical skills?',
-          placeholder: 'Python, JavaScript, React',
-          required: true,
-        ),
-        ResumeStep(
-          id: 'softSkills',
-          label: 'Soft skills?',
-          placeholder: 'Communication, Leadership',
-          required: false,
-        ),
-        ResumeStep(
-          id: 'languages',
-          label: 'Languages you speak?',
-          placeholder: 'English, Spanish',
-          required: false,
-        ),
-      ],
-    ),
-  ];
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-  int currentSection = 0;
-  int currentStep = 0;
-  final Map<String, String> formData = {};
-
-  ResumeSection get sectionData => sections[currentSection];
-  ResumeStep get stepData => sectionData.steps[currentStep];
-
-  void nextStep() {
-    if (stepData.required &&
-        (formData[stepData.id] == null ||
-            formData[stepData.id]!.trim().isEmpty)) {
-      return;
-    }
-    setState(() {
-      if (currentStep < sectionData.steps.length - 1) {
-        currentStep++;
-      } else if (currentSection < sections.length - 1) {
-        currentSection++;
-        currentStep = 0;
-      } else {
-        // Completed
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('Resume completed!'),
-            content: Text(formData.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: Container(
+          decoration: BoxDecoration(
+            color: widget.color,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: widget.accentColor.withOpacity(0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-        );
-      }
-    });
-  }
-
-  void prevStep() {
-    setState(() {
-      if (currentStep > 0) {
-        currentStep--;
-      } else if (currentSection > 0) {
-        currentSection--;
-        currentStep = sections[currentSection].steps.length - 1;
-      }
-    });
-  }
-
-  double get sectionProgress => ((currentStep + 1) / sectionData.steps.length);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Resume Builder - ${sectionData.name}'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Progress card
-              Card(
-                elevation: 4,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Format',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          'https://d.novoresume.com/images/doc/reverse-chronological-resume-template.png',
-                          height: 120,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      LinearProgressIndicator(
-                        value: sectionProgress,
-                        color: Colors.deepPurple,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${sectionData.name} • ${(sectionProgress * 100).round()}%',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Question card
-              Card(
-                elevation: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Question ${currentStep + 1} of ${sectionData.steps.length}',
-                        style: GoogleFonts.inter(
-                          color: Colors.black54,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        stepData.label,
-                        style: GoogleFonts.playfairDisplay(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (stepData.type == 'textarea')
-                        TextFormField(
-                          minLines: 4,
-                          maxLines: 6,
-                          initialValue: formData[stepData.id] ?? '',
-                          onChanged: (v) => formData[stepData.id] = v,
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: stepData.placeholder,
-                          ),
-                        )
-                      else
-                        TextFormField(
-                          initialValue: formData[stepData.id] ?? '',
-                          onChanged: (v) => formData[stepData.id] = v,
-                          keyboardType: stepData.type == 'email'
-                              ? TextInputType.emailAddress
-                              : (stepData.type == 'tel'
-                                    ? TextInputType.phone
-                                    : TextInputType.text),
-                          decoration: InputDecoration(
-                            border: const OutlineInputBorder(),
-                            hintText: stepData.placeholder,
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(widget.icon, size: 30, color: widget.accentColor),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TextButton.icon(
-                            onPressed: prevStep,
-                            icon: const Icon(Icons.arrow_back),
-                            label: const Text('Back'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (stepData.required &&
-                                  (formData[stepData.id] == null ||
-                                      formData[stepData.id]!.trim().isEmpty)) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Please fill this required field',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-                              nextStep();
-                            },
-                            child: Text(
-                              (currentSection == sections.length - 1 &&
-                                      currentStep ==
-                                          sectionData.steps.length - 1)
-                                  ? 'Complete'
-                                  : 'Continue',
+                          Text(
+                            widget.title,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
                             ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.subtitle,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: widget.accentColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: widget.accentColor,
+                      size: 15,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Section overview
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: List.generate(sections.length, (i) {
-                  final s = sections[i];
-                  final completed = i < currentSection;
-                  return ChoiceChip(
-                    label: Text(s.name),
-                    selected: i == currentSection,
-                    onSelected: (v) {
-                      setState(() {
-                        currentSection = i;
-                        currentStep = 0;
-                      });
-                    },
-                    selectedColor: Colors.deepPurple.shade100,
-                    backgroundColor: completed
-                        ? Colors.green.shade100
-                        : Colors.grey.shade100,
-                  );
-                }),
-              ),
-              const SizedBox(height: 40),
-            ],
+              ],
+            ),
           ),
         ),
       ),
