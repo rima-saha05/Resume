@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:convert';
 
 // Data models for sections/steps
 class ResumeSection {
@@ -191,57 +194,298 @@ class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
     });
   }
 
-  void showCompletionDialog() {
+  Future<String> generateAIResumeContent() async {
+    final apiKey = dotenv.env['API_KEY'] ?? '';
+
+    if (apiKey.isEmpty) {
+      throw Exception('API key not found in .env file');
+    }
+
+    final uri = Uri.parse(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
+    );
+
+    final prompt = """
+You are a professional resume writer. Create a polished, modern, ATS-friendly résumé using the user's information below.
+
+USER DATA:
+$formData
+
+Your output MUST follow this exact structure:
+
+============================
+FULL NAME (Large & Bold)
+
+📍 City
+📞 Phone
+📧 Email
+
+----------------------------
+PROFESSIONAL SUMMARY
+Write a 3–4 line summary based on experience and skills.
+
+----------------------------
+EXPERIENCE
+Job Title — Company (Duration)
+• 3–5 bullet points highlighting achievements using strong action verbs.
+
+----------------------------
+EDUCATION
+Degree — School (Graduation Year)
+Major: (if provided)
+
+----------------------------
+TECHNICAL SKILLS
+• List skills separated by comma
+
+----------------------------
+SOFT SKILLS
+• List soft skills in bullet format
+
+----------------------------
+LANGUAGES
+• List languages user speaks
+============================
+
+Rules:
+- Use clean, consistent formatting
+- Use bullet points wherever needed
+- Do NOT add filler information
+- Do NOT hallucinate; use only provided data
+- Make it look like a real professional CV
+""";
+
+
+    try {
+      print('📤 Sending API request to Google Gemini...');
+      print('🔑 API Key present: ${apiKey.isNotEmpty}');
+      print('🎯 Using model: gemini-2.5-flash');
+
+      final response = await http
+          .post(
+            uri,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              "contents": [
+                {
+                  "parts": [
+                    {"text": prompt},
+                  ],
+                },
+              ],
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              print('❌ API request timeout after 30 seconds');
+              throw Exception('API request timed out after 30 seconds');
+            },
+          );
+
+      print('📥 API Response received: ${response.statusCode}');
+
+      if (response.statusCode != 200) {
+        print('❌ API Error: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        throw Exception('API Error: ${response.statusCode} - ${response.body}');
+      }
+
+      final data = jsonDecode(response.body);
+      print('✅ Response parsed successfully');
+
+      if (data['candidates'] == null ||
+          data['candidates'].isEmpty ||
+          data['candidates'][0]['content'] == null ||
+          data['candidates'][0]['content']['parts'] == null ||
+          data['candidates'][0]['content']['parts'].isEmpty) {
+        print('❌ No content in API response');
+        throw Exception('No response from Gemini API');
+      }
+
+      final resumeContent =
+          data["candidates"][0]["content"]["parts"][0]["text"] ??
+          'Error generating resume';
+      print('📄 Resume generated: ${resumeContent.length} characters');
+      return resumeContent;
+    } catch (e) {
+      print('❌ Exception in generateAIResumeContent: $e');
+      throw Exception('Failed to generate resume: $e');
+    }
+  }
+
+  void showCompletionDialog() async {
+    if (!mounted) return;
+
+    // Show temporary loading screen
+    if (!mounted) return;
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Color(0xFF10B981)),
-            const SizedBox(width: 12),
-            Text(
-              'Resume Complete!',
-              style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w700),
+      barrierDismissible: false,
+      builder: (_) => WillPopScope(
+        onWillPop: () async => false,
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: Center(
+                          child: Text(
+                            '⏳',
+                            style: GoogleFonts.inter(fontSize: 40),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Generating your resume...',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'This may take a moment',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      ),
+    );
+
+    try {
+      // Get AI generated resume content
+      print('⏳ Starting resume generation...');
+      String aiResume = await generateAIResumeContent();
+
+      if (!mounted) {
+        print('⚠️ Widget unmounted, aborting dialog display');
+        return;
+      }
+
+      print('✅ Resume generated, closing loading dialog');
+      Navigator.pop(context); // Remove loading dialog
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Row(
             children: [
-              Text(
-                'Your resume has been successfully created with the following information:',
-                style: GoogleFonts.inter(color: Colors.black87),
-              ),
-              const SizedBox(height: 16),
+              const Icon(Icons.check_circle, color: Color(0xFF10B981)),
+              const SizedBox(width: 12),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    formData.entries
-                        .map((e) => '${e.key}: ${e.value}')
-                        .join('\n\n'),
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      color: Colors.black54,
-                    ),
+                child: Text(
+                  'Resume Ready!',
+                  style: GoogleFonts.playfairDisplay(
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('Done'),
+          content: SizedBox(
+            height: 400,
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Text(
+                aiResume,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Colors.black87,
+                  height: 1.6,
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
-    );
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Implement download/save functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Download feature coming soon!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              child: const Text("Download"),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      print('❌ Error in showCompletionDialog: $e');
+
+      if (!mounted) {
+        print('⚠️ Widget unmounted, aborting error dialog display');
+        return;
+      }
+
+      try {
+        Navigator.pop(context); // Remove loading dialog
+      } catch (navError) {
+        print('⚠️ Could not pop loading dialog: $navError');
+      }
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.error, color: Color(0xFFEF4444)),
+              const SizedBox(width: 12),
+              const Text('Error'),
+            ],
+          ),
+          content: Text(
+            'Failed to generate resume: $e',
+            style: GoogleFonts.inter(fontSize: 14, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   double get overallProgress {
