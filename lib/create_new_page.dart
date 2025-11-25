@@ -164,6 +164,17 @@ class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
   ResumeSection get sectionData => sections[currentSection];
   ResumeStep get stepData => sectionData.steps[currentStep];
 
+  bool _isCurrentSectionComplete() {
+    // Check if all required fields in current section are filled
+    for (var step in sectionData.steps) {
+      if (step.required &&
+          (formData[step.id] == null || formData[step.id]!.trim().isEmpty)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   void nextStep() {
     if (stepData.required &&
         (formData[stepData.id] == null ||
@@ -205,7 +216,8 @@ class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey",
     );
 
-    final prompt = """
+    final prompt =
+        """
 You are a professional resume writer. Create a polished, modern, ATS-friendly résumé using the user's information below.
 
 USER DATA:
@@ -254,7 +266,6 @@ Rules:
 - Do NOT hallucinate; use only provided data
 - Make it look like a real professional CV
 """;
-
 
     try {
       print('📤 Sending API request to Google Gemini...');
@@ -634,6 +645,7 @@ Rules:
                     const SizedBox(height: 20),
                     if (stepData.type == 'textarea')
                       TextFormField(
+                        key: ValueKey('${currentSection}-${currentStep}'),
                         minLines: 4,
                         maxLines: 6,
                         initialValue: formData[stepData.id] ?? '',
@@ -661,6 +673,7 @@ Rules:
                       )
                     else
                       TextFormField(
+                        key: ValueKey('${currentSection}-${currentStep}'),
                         initialValue: formData[stepData.id] ?? '',
                         onChanged: (v) => formData[stepData.id] = v,
                         keyboardType: stepData.type == 'email'
@@ -772,10 +785,34 @@ Rules:
                     label: Text(s.name),
                     selected: isActive,
                     onSelected: (v) {
-                      setState(() {
-                        currentSection = i;
-                        currentStep = 0;
-                      });
+                      // Only allow navigation to completed sections or next section
+                      if (i < currentSection || i == currentSection) {
+                        setState(() {
+                          currentSection = i;
+                          currentStep = 0;
+                        });
+                      } else if (i == currentSection + 1 &&
+                          _isCurrentSectionComplete()) {
+                        // Allow moving to next section only if current is complete
+                        setState(() {
+                          currentSection = i;
+                          currentStep = 0;
+                        });
+                      } else {
+                        // Show error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text(
+                              'Please complete all required fields in current section first',
+                            ),
+                            backgroundColor: Colors.orange[600],
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }
                     },
                     backgroundColor: completed
                         ? const Color(0xFF10B981).withOpacity(0.2)
