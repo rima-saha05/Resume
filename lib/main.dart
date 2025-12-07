@@ -51,14 +51,7 @@ class HomeScreen extends StatelessWidget {
             pinned: true,
             backgroundColor: const Color(0xFF6366F1),
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                'Resumate',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
+  
               background: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
