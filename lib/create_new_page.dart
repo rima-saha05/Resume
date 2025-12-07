@@ -98,7 +98,7 @@ class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
         ResumeStep(
           id: 'major',
           label: 'Your major?',
-          placeholder: 'Computer Science',
+          placeholder: 'Ex:Computer Science',
           required: false,
         ),
       ],
