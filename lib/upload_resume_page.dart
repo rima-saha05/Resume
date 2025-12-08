@@ -178,7 +178,7 @@ LANGUAGES
 
 Rules:
 - Use clean, consistent formatting
-- Use bullet points (•) for lists
+- Use bullet points • for lists
 - Enhance language but keep all facts accurate
 - Use strong action verbs (Led, Developed, Implemented, etc.)
 - Add quantifiable metrics where possible

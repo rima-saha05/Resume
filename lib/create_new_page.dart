@@ -68,7 +68,7 @@ class _ResumeBuilderPageState extends State<ResumeBuilderPage> {
           id: 'phone',
           label: 'Phone number?',
           type: 'tel',
-          placeholder: 'Example: +1 (555) 123-4567 or +44 20 7946 0958',
+          placeholder: 'Example: +1 (555) 123-4567 or +44 20 7946 0959',
           required: true,
         ),
         ResumeStep(

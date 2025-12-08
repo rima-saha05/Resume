@@ -130,7 +130,7 @@ class PDFGenerator {
       'EDUCATION',
       'TECHNICAL SKILLS',
       'SOFT SKILLS',
-      'LANGUAGES',
+      'LANGUAGE',
     ];
     return sectionKeywords.any((keyword) => text.contains(keyword));
   }
